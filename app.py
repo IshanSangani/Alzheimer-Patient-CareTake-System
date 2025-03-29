@@ -1,57 +1,62 @@
-import streamlit as st
-import base64
-from PIL import Image
-import io
-from google import generativeai as genai
+from flask import Flask, request, jsonify
+import time
 
-# Set up the API key
-API_KEY = "AIzaSyD16PQAtvVGsanvV5mcuN38LFjd541JyYM"
-genai.configure(api_key=API_KEY)
+app = Flask(__name__)
 
-# Set up Streamlit page
-st.set_page_config(page_title="Image Recognition App", layout="centered")
-st.title("Image Recognition App")
-st.write("Upload an image and the app will tell you what it sees!")
+pulse_timestamps = []  # Store timestamps of detected heartbeats
+pulse_values = []  # Store recent pulse values
 
-# File uploader
-uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
+WINDOW_SIZE = 10  # Increased window size
+MIN_PEAK_HEIGHT = 10  # Minimum difference to consider a peak
+MIN_INTERVAL = 0.3  # Minimum time between beats (equivalent to 200 BPM)
 
-if uploaded_file is not None:
-    # Display the uploaded image
-    image = Image.open(uploaded_file)
-    st.image(image, caption='Uploaded Image', use_container_width=True)
-    
-    # Convert image for Gemini API
-    buffered = io.BytesIO()
-    image.save(buffered, format="JPEG")
-    image_bytes = buffered.getvalue()
-    
-    # Add a button to analyze the image
-    if st.button("Analyze Image"):
-        with st.spinner("Analyzing image..."):
-            try:
-                # Initialize Gemini model with the updated model name
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                
-                # Generate content with the image
-                response = model.generate_content([
-                    "What is in this image? Describe it in detail.",
-                    {"mime_type": "image/jpeg", "data": image_bytes}
-                ])
-                
-                # Display results
-                st.subheader("Analysis Results")
-                st.write(response.text)
-                
-            except Exception as e:
-                st.error(f"Error analyzing image: {str(e)}")
-                import traceback
-                st.error(traceback.format_exc())
+@app.route('/data', methods=['POST'])
+def receive_pulse():
+    global pulse_timestamps, pulse_values
 
-# Instructions at the bottom
-st.markdown("""
-### How to use:
-1. Upload an image using the file uploader
-2. Click the 'Analyze Image' button
-3. Wait for the analysis results
-""")
+    data = request.get_json()
+    pulse_value = data.get("pulse", 0)
+    current_time = time.time()
+
+    # Store recent pulse values
+    pulse_values.append({'time': current_time, 'value': pulse_value})
+
+    # Keep only recent readings
+    pulse_values = [x for x in pulse_values if current_time - x['time'] < 10]  # 10-second window
+
+    # Peak detection - more robust
+    if len(pulse_values) >= 3:
+        # Check if middle value is a peak
+        prev_val = pulse_values[-2]['value']
+        curr_val = pulse_values[-1]['value']
+        next_val = pulse_value  # current value is the new incoming one
+        
+        # Only consider it a peak if:
+        # 1. It's higher than neighbors
+        # 2. The difference is significant
+        # 3. Enough time has passed since last peak
+        is_peak = (prev_val < curr_val > next_val and 
+                  curr_val - min(prev_val, next_val) > MIN_PEAK_HEIGHT)
+        
+        if is_peak:
+            last_peak_time = pulse_timestamps[-1] if pulse_timestamps else 0
+            if current_time - last_peak_time > MIN_INTERVAL:
+                pulse_timestamps.append(current_time)
+                # Keep only last 10 timestamps
+                pulse_timestamps = pulse_timestamps[-10:]
+
+    # Calculate BPM if we have at least 2 timestamps
+    if len(pulse_timestamps) >= 2:
+        intervals = [pulse_timestamps[i] - pulse_timestamps[i-1] 
+                    for i in range(1, len(pulse_timestamps))]
+        avg_interval = sum(intervals) / len(intervals)
+        bpm = min(200, max(40, 60 / avg_interval))  # Clamp to reasonable values
+    else:
+        bpm = 0
+
+    response = {"pulse": pulse_value, "bpm": round(bpm)}
+    print(f"Received Pulse: {response}")
+    return jsonify(response)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
