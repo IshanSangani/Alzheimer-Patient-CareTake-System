@@ -24,7 +24,7 @@ def send_otp_email(recipient, otp):
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
     sender_email = 'ishansangani25@gmail.com'  # Replace with your email
-    sender_password = 'saqz xsom arbv blvr'   # Use app password or env var
+    sender_password = 'your_app_password'   # Use app password or env var
 
     subject = 'Your AlzCare Registration OTP'
     body = f'Your OTP for registration is: {otp}'
