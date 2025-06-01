@@ -35,7 +35,7 @@ def send_notification_email(recipient, subject, body):
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
     sender_email = 'ishansangani25@gmail.com'  # Replace with your email
-    sender_password = 'saqz xsom arbv blvr'   # Use app password or env var
+    sender_password = 'your_app_password'   # Use app password or env var
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
