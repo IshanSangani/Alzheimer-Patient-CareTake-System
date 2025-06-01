@@ -6,6 +6,7 @@ import Dashboard from './Dashboard';
 import PatientProfile from './PatientProfile';
 import About from './About';
 import Contact from './Contact';
+import DeviceInfo from './DeviceInfo';
 
 const Placeholder = ({ title }) => (
   <div className="min-h-screen bg-white flex flex-col items-center justify-center">
@@ -54,7 +55,7 @@ const appRouter = createBrowserRouter([
         path: "/device",
         element: (
             <ProtectedRoute>
-                <Placeholder title="Device" />
+               <DeviceInfo />
             </ProtectedRoute>
         ),
     },

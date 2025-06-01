@@ -118,11 +118,11 @@ function Login() {
           <div className='flex flex-col md:flex-row items-center justify-center w-[95%] max-w-5xl bg-white rounded-xl shadow-lg p-5 md:p-8'>
             <div className='hidden md:block md:w-1/2 p-4 flex flex-col items-center'>
               <img className='w-full max-w-md mx-auto' src="https://img.freepik.com/free-vector/healthcare-background-with-medical-symbols-geometric-style_1017-26363.jpg" alt="alzheimer-care-logo" />
-              <h2 className='text-center text-xl font-semibold text-blue-600 mt-4'>AlzCare: Caretaker Portal</h2>
+              <h2 className='text-center text-xl font-semibold text-blue-600 mt-4'>CareConnect: Caretaker Portal</h2>
             </div>
             <div className='w-full md:w-1/2 px-4 flex flex-col items-center md:items-start'>
               <div className='my-5 text-center md:text-left w-full max-w-md'>
-                <h1 className='font-bold text-4xl md:text-5xl text-blue-800'>AlzCare</h1>
+                <h1 className='font-bold text-4xl md:text-5xl text-blue-800'>CareConnect</h1>
                 <p className='text-gray-600 mt-2'>Monitor and care for your loved ones with Alzheimer's</p>
               </div>
               <h1 className='mt-6 mb-3 text-2xl font-bold text-gray-700 text-center md:text-left w-full max-w-md'>{isLogin ? "Caretaker Login" : "Register as Caretaker"}</h1>
