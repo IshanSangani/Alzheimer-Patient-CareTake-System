@@ -125,7 +125,7 @@ cd ../frontend
 
 2. Install Dependencies 
 
-npm run dev 
+npm install
 
 # or 
 
